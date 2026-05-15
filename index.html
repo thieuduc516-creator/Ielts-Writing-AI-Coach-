@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IELTS Writing AI Coach</title>
+  <style>
+    :root{
+      --bg:#f5f7fb;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --primary:#4f46e5;
+      --primary2:#0ea5e9;
+      --good:#059669;
+      --bad:#e11d48;
+      --warn:#d97706;
+      --dark:#020617;
+      --card:#ffffff;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter,Arial,Helvetica,sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, #dbeafe 0, transparent 28%),
+        radial-gradient(circle at 90% 10%, #ccfbf1 0, transparent 25%),
+        linear-gradient(135deg,#f8fafc,#eef2ff 48%,#ecfeff);
+      color:var(--ink);
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1220px;margin:0 auto;padding:24px}
+    .nav{
+      position:sticky;top:0;z-index:10;
+      backdrop-filter:blur(16px);
+      background:rgba(255,255,255,.82);
+      border-bottom:1px solid rgba(226,232,240,.8);
+    }
+    .nav-inner{max-width:1220px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:900}
+    .logo{width:38px;height:38px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;color:white;font-weight:900}
+    .links{display:flex;gap:8px;flex-wrap:wrap}
+    .links a{padding:9px 12px;border-radius:999px;font-weight:800;font-size:13px;color:#334155}
+    .links a:hover{background:#eef2ff;color:#4338ca}
+    .hero{
+      margin-top:22px;
+      background:linear-gradient(135deg,#020617,#312e81 58%,#0369a1);
+      color:white;
+      border-radius:34px;
+      padding:38px;
+      overflow:hidden;
+      box-shadow:0 30px 70px rgba(15,23,42,.18);
+      position:relative;
+    }
+    .hero:after{
+      content:"";
+      position:absolute;right:-80px;top:-80px;width:260px;height:260px;
+      border-radius:999px;background:rgba(255,255,255,.12)
+    }
+    .eyebrow{display:inline-flex;gap:8px;align-items:center;border-radius:999px;background:rgba(255,255,255,.14);padding:9px 14px;font-size:13px;font-weight:900}
+    h1{font-size:48px;line-height:1.05;margin:18px 0 14px;max-width:820px;letter-spacing:-1.3px}
+    .hero p{max-width:760px;color:rgba(255,255,255,.78);font-size:17px;line-height:1.7}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+    .btn{
+      border:0;border-radius:18px;padding:13px 18px;font-weight:900;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      transition:.2s transform,.2s box-shadow,.2s background;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn-white{background:white;color:#0f172a}
+    .btn-dark{background:var(--dark);color:white}
+    .btn-primary{background:var(--primary);color:white}
+    .btn-green{background:var(--good);color:white}
+    .btn-light{background:#f1f5f9;color:#334155}
+    .btn:disabled{background:#cbd5e1;cursor:not-allowed;transform:none}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:24px}
+    .stat{border-radius:22px;background:rgba(255,255,255,.12);padding:18px;border:1px solid rgba(255,255,255,.12)}
+    .stat b{font-size:26px}.stat p{font-size:12px;margin:6px 0 0;color:rgba(255,255,255,.65)}
+    .section{margin-top:28px}
+    .section-title{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px}
+    .section-title h2{font-size:28px;margin:0}.section-title p{margin:0;color:var(--muted)}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .grid2{display:grid;grid-template-columns:0.92fr 1.08fr;gap:18px}
+    .card{
+      background:var(--card);
+      border:1px solid rgba(226,232,240,.9);
+      border-radius:28px;
+      padding:22px;
+      box-shadow:0 16px 40px rgba(15,23,42,.07);
+    }
+    .mini-card{border-radius:24px;padding:20px;background:white;border:1px solid var(--line);box-shadow:0 10px 28px rgba(15,23,42,.05)}
+    .icon{width:44px;height:44px;border-radius:16px;display:grid;place-items:center;background:#eef2ff;color:#4338ca;font-weight:900}
+    .level-card{cursor:pointer;transition:.2s}
+    .level-card:hover{transform:translateY(-2px);box-shadow:0 20px 50px rgba(15,23,42,.10)}
+    .level-card.active{border-color:#818cf8;background:linear-gradient(180deg,#eef2ff,#fff)}
+    .pill{display:inline-flex;align-items:center;border-radius:999px;padding:6px 10px;background:#f1f5f9;color:#334155;font-size:12px;font-weight:900;margin:3px}
+    .pill-primary{background:#eef2ff;color:#4338ca}
+    .pill-good{background:#dcfce7;color:#047857}
+    .pill-bad{background:#ffe4e6;color:#be123c}
+    .pill-dark{background:rgba(255,255,255,.14);color:white}
+    .question{cursor:pointer;border-radius:22px;border:1px solid var(--line);padding:16px;margin-bottom:12px;background:white;transition:.2s}
+    .question:hover{transform:translateY(-1px);box-shadow:0 10px 25px rgba(15,23,42,.08)}
+    .question.active{background:linear-gradient(135deg,#4f46e5,#0ea5e9);color:white;border-color:transparent}
+    .question.active .pill{background:rgba(255,255,255,.16);color:white}
+    .task-panel{background:linear-gradient(135deg,#020617,#1e1b4b);color:white;border-radius:28px;padding:24px;margin-bottom:16px}
+    .task-panel p{color:rgba(255,255,255,.77);line-height:1.65}
+    textarea,select,input{
+      width:100%;border:1px solid #cbd5e1;border-radius:18px;padding:14px;font-size:15px;outline:none;background:white;
+    }
+    textarea{min-height:260px;line-height:1.65;resize:vertical}
+    textarea:focus,select:focus,input:focus{border-color:#818cf8;box-shadow:0 0 0 4px #e0e7ff}
+    label{display:block;font-size:13px;font-weight:900;margin-bottom:8px;color:#334155}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+    .muted{color:var(--muted)}
+    .scorebox{background:linear-gradient(135deg,#020617,#312e81);color:white;border-radius:28px;padding:24px}
+    .score{font-size:64px;font-weight:1000;letter-spacing:-2px}
+    .bar{height:9px;background:#e2e8f0;border-radius:999px;overflow:hidden;margin-top:10px}
+    .bar span{display:block;height:100%;background:linear-gradient(90deg,#4f46e5,#0ea5e9,#10b981);border-radius:999px}
+    .criterion,.sentence{border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px;background:white}
+    .sentence{cursor:pointer}
+    .sentence.active{border-color:#38bdf8;background:#f0f9ff}
+    .guide{background:#020617;color:white;border-radius:24px;padding:20px;position:sticky;top:88px}
+    .guide h3{margin-top:0}
+    .guide-box{background:rgba(255,255,255,.1);border-radius:16px;padding:14px;margin-bottom:12px}
+    .guide-box.green{background:rgba(16,185,129,.22)}
+    .guide-box.white{background:white;color:#0f172a}
+    .guide-box small{display:block;text-transform:uppercase;font-weight:900;color:rgba(255,255,255,.52);margin-bottom:6px}
+    .guide-box.white small{color:#94a3b8}
+    .vocab{border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}
+    .vocab-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .vocab-grid div{border-radius:16px;padding:12px;background:#f8fafc;font-size:14px}
+    .rank-row{display:flex;align-items:center;justify-content:space-between;border-radius:16px;background:#f8fafc;padding:12px;margin-bottom:10px}
+    .avatar{width:34px;height:34px;border-radius:12px;background:#e0e7ff;display:grid;place-items:center;font-weight:900;color:#4338ca}
+    .report{background:#020617;color:white;font-family:Consolas,monospace;font-size:13px;min-height:260px;margin-top:12px}
+    .lesson-step{display:flex;gap:12px;align-items:flex-start;border-radius:18px;background:#f8fafc;padding:14px;margin-bottom:10px}
+    .stepno{width:28px;height:28px;flex:none;border-radius:999px;background:#4f46e5;color:white;display:grid;place-items:center;font-weight:900;font-size:13px}
+    footer{margin:32px 0 10px;color:#64748b;text-align:center;font-size:13px}
+    @media(max-width:960px){
+      .grid2,.grid3,.form-row,.vocab-grid,.stats{grid-template-columns:1fr}
+      h1{font-size:34px}
+      .nav-inner{align-items:flex-start;flex-direction:column}
+      .hero{padding:26px}
+      .guide{position:static}
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="brand"><div class="logo">W</div> IELTS Writing AI Coach</div>
+      <div class="links">
+        <a href="#levels">Levels</a>
+        <a href="#practice">Practice</a>
+        <a href="#feedback">Feedback</a>
+        <a href="#vocabulary">Vocabulary</a>
+        <a href="#report">Export</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="wrap">
+    <section class="hero">
+      <span class="eyebrow">⚡ Smart IELTS Writing Practice</span>
+      <h1>Học Writing theo level, sửa từng câu, nâng từ vựng theo band</h1>
+      <p>
+        Một nền tảng luyện IELTS Writing lấy cảm hứng từ mô hình học tương tác:
+        chọn cấp độ, chọn task, viết bài, nhận feedback ngay, học lại lỗi sai và xuất báo cáo luyện tập.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-white" href="#practice">Bắt đầu luyện viết</a>
+        <a class="btn btn-light" href="#levels">Chọn trình độ</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>3</b><p>Levels</p></div>
+        <div class="stat"><b>2</b><p>IELTS Tasks</p></div>
+        <div class="stat"><b>4</b><p>Band Criteria</p></div>
+        <div class="stat"><b>Live</b><p>Sentence Feedback</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="levels">
+      <div class="section-title">
+        <div>
+          <h2>Choose Your Level</h2>
+          <p>Chọn trình độ để hệ thống điều chỉnh feedback, từ vựng và bài tập.</p>
+        </div>
+        <span class="pill pill-primary" id="selectedLevelLabel">Selected: Intermediate</span>
+      </div>
+      <div class="grid3">
+        <div class="mini-card level-card" data-level="Beginner" onclick="selectLevel('Beginner')">
+          <div class="icon">B</div>
+          <h3>Beginner</h3>
+          <p class="muted">Phù hợp band 5.0–6.0. Tập câu đúng, từ vựng cơ bản, cấu trúc đoạn đơn giản.</p>
+          <span class="pill">15–20 min / lesson</span>
+        </div>
+        <div class="mini-card level-card active" data-level="Intermediate" onclick="selectLevel('Intermediate')">
+          <div class="icon">I</div>
+          <h3>Intermediate</h3>
+          <p class="muted">Phù hợp band 6.0–7.0. Tập paragraphing, sentence variety, task response.</p>
+          <span class="pill">20–30 min / lesson</span>
+        </div>
+        <div class="mini-card level-card" data-level="Advanced" onclick="selectLevel('Advanced')">
+          <div class="icon">A</div>
+          <h3>Advanced</h3>
+          <p class="muted">Phù hợp band 7.5–8.5+. Tập coherence, argument depth, advanced vocabulary.</p>
+          <span class="pill">30–40 min / lesson</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="grid3">
+        <div class="mini-card">
+          <div class="icon">🧠</div>
+          <h3>Smart Learning</h3>
+          <p class="muted">Feedback thay đổi theo level, task type và lỗi lặp lại của người học.</p>
+        </div>
+        <div class="mini-card">
+          <div class="icon">🏆</div>
+          <h3>Gamified Practice</h3>
+          <p class="muted">Điểm luyện tập, streak và bảng xếp hạng giúp người học có động lực.</p>
+        </div>
+        <div class="mini-card">
+          <div class="icon">⚡</div>
+          <h3>Instant Feedback</h3>
+          <p class="muted">Sửa lỗi từng câu, gợi ý collocation và nâng cấp câu theo band.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section grid2" id="practice">
+      <div>
+        <div class="card">
+          <div class="section-title">
+            <div>
+              <h2>Select Task</h2>
+              <p>Chọn đề luyện IELTS Writing.</p>
+            </div>
+          </div>
+          <div id="questionList"></div>
+        </div>
+
+        <div class="card">
+          <div class="task-panel">
+            <span class="pill pill-dark" id="taskType"></span>
+            <span class="pill pill-dark" id="taskLevel"></span>
+            <h2 id="taskTitle"></h2>
+            <p id="taskPrompt"></p>
+            <span class="pill pill-dark" id="taskTime"></span>
+            <span class="pill pill-dark" id="taskWords"></span>
+          </div>
+          <div class="grid2" style="grid-template-columns:1fr 1fr">
+            <div class="mini-card">
+              <h3>Requirements</h3>
+              <div id="requirements"></div>
+            </div>
+            <div class="mini-card">
+              <h3>Suggested Plan</h3>
+              <div id="plan"></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="startTask()">Start this task</button>
+        </div>
+
+        <div class="card">
+          <h2>Essay Editor</h2>
+          <div class="form-row">
+            <div>
+              <label>Target Band</label>
+              <select id="targetBand">
+                <option>5.5</option><option>6.0</option><option>6.5</option>
+                <option selected>7.0</option><option>7.5</option><option>8.0</option>
+              </select>
+            </div>
+            <div>
+              <label>Practice Mode</label>
+              <select id="practiceMode">
+                <option>Strict Examiner</option>
+                <option>Friendly Tutor</option>
+                <option>Sentence-by-sentence</option>
+                <option>Band Upgrade</option>
+              </select>
+            </div>
+          </div>
+          <p class="muted"><b>Word count:</b> <span id="wordCount">0</span> · <b>Practice points:</b> <span id="points">0</span></p>
+          <textarea id="essay" oninput="updateWordCount()">Many people thinks online learning is more better than traditional class. Government should spend money for education. This can help students learn good.</textarea>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-dark" onclick="evaluateEssay()">Evaluate & Correct</button>
+            <button class="btn btn-light" onclick="loadSample()">Load sample errors</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="feedback">
+        <div class="scorebox">
+          <p style="margin-top:0;color:rgba(255,255,255,.7)">AI Feedback</p>
+          <h2>Estimated Band</h2>
+          <div class="score" id="overallScore">--</div>
+          <div class="bar"><span id="scoreBar" style="width:0%"></span></div>
+          <p>Band gap: <span id="bandGap">--</span></p>
+        </div>
+
+        <div class="card" style="margin-top:18px">
+          <h2>IELTS Criteria</h2>
+          <div id="criteria"></div>
+        </div>
+
+        <div class="card">
+          <h2>Lesson Mode</h2>
+          <div class="lesson-step"><div class="stepno">1</div><div><b>Identify</b><br><span class="muted">Tìm lỗi chính trong câu.</span></div></div>
+          <div class="lesson-step"><div class="stepno">2</div><div><b>Understand</b><br><span class="muted">Giải thích vì sao sai.</span></div></div>
+          <div class="lesson-step"><div class="stepno">3</div><div><b>Upgrade</b><br><span class="muted">Nâng câu lên band mục tiêu.</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section grid2">
+      <div class="card">
+        <h2>Sentence-by-sentence Checker</h2>
+        <p class="muted">Bấm từng câu để xem lỗi, sửa, giải thích và câu nâng cấp.</p>
+        <div id="sentenceList"></div>
+      </div>
+      <div class="guide" id="sentenceGuide">
+        <h3>Sentence Guide</h3>
+        <p>Feedback theo từng câu sẽ hiện ở đây sau khi bấm Evaluate.</p>
+      </div>
+    </section>
+
+    <section class="section grid2" id="vocabulary">
+      <div class="card">
+        <h2>Band Vocabulary Ladder</h2>
+        <p class="muted">Cụm từ được chia theo band để học viên không dùng từ quá sức hoặc không tự nhiên.</p>
+        <div id="vocabList"></div>
+      </div>
+      <div class="card">
+        <h2>Top Students</h2>
+        <p class="muted">Demo gamification để tăng động lực học.</p>
+        <div class="rank-row"><div style="display:flex;align-items:center;gap:10px"><div class="avatar">T</div><b>Thieu</b></div><span class="pill pill-good" id="rankPoints">0 points</span></div>
+        <div class="rank-row"><div style="display:flex;align-items:center;gap:10px"><div class="avatar">A</div><b>Academic Learner</b></div><span class="pill">8,420 points</span></div>
+        <div class="rank-row"><div style="display:flex;align-items:center;gap:10px"><div class="avatar">B</div><b>Band 7 Hunter</b></div><span class="pill">6,910 points</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="report">
+      <div class="card">
+        <div class="section-title">
+          <div>
+            <h2>Export Feedback Report</h2>
+            <p>Xuất báo cáo để học viên lưu lại hoặc gửi giáo viên.</p>
+          </div>
+          <button class="btn btn-green" onclick="showReport()">Show Report</button>
+        </div>
+        <textarea id="reportBox" class="report" readonly placeholder="Report will appear here after evaluation."></textarea>
+      </div>
+    </section>
+
+    <footer>
+      IELTS Writing AI Coach · Static demo for GitHub Pages · Estimated band only, not an official IELTS score.
+    </footer>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        id:"q1", task:"Task 2", type:"Opinion Essay", topic:"Education", level:"Band 5.5–7.0",
+        time:"40 minutes", words:"250+ words",
+        prompt:"Some people believe that online learning will eventually replace traditional classroom education. To what extent do you agree or disagree?",
+        requirements:["State your opinion clearly.","Develop at least two main ideas.","Use examples and avoid memorised phrases."],
+        plan:["Introduction: paraphrase + opinion","Body 1: benefits of online learning","Body 2: why classrooms still matter","Conclusion: restate your position"]
+      },
+      {
+        id:"q2", task:"Task 2", type:"Discussion Essay", topic:"Technology", level:"Band 6.0–7.5",
+        time:"40 minutes", words:"250+ words",
+        prompt:"Some people think artificial intelligence will improve education, while others believe it may reduce students' ability to think independently. Discuss both views and give your opinion.",
+        requirements:["Discuss both views fairly.","Give your own opinion.","Explain both benefits and risks of AI."],
+        plan:["Introduction: paraphrase both views","Body 1: AI supports personalised learning","Body 2: AI may cause overdependence","Conclusion: balanced opinion"]
+      },
+      {
+        id:"q3", task:"Task 1", type:"Line Graph", topic:"Data Description", level:"Band 5.0–6.5",
+        time:"20 minutes", words:"150+ words",
+        prompt:"The line graph shows changes in the number of students taking online courses between 2015 and 2025. Summarise the information by selecting and reporting the main features, and make comparisons where relevant.",
+        requirements:["Write a clear overview.","Select main trends, not every detail.","Use comparison language accurately."],
+        plan:["Introduction: paraphrase the chart","Overview: main upward/downward trends","Body 1: describe first major trend","Body 2: compare final values"]
+      }
+    ];
+
+    const vocabByTopic = {
+      Education:[
+        ["học online","online learning","distance learning","remote learning","digitally mediated learning"],
+        ["lớp học truyền thống","traditional class","traditional classroom","classroom-based education","face-to-face instruction"],
+        ["học tốt hơn","learn better","improve learning outcomes","enhance academic performance","facilitate measurable educational gains"]
+      ],
+      Technology:[
+        ["AI trong giáo dục","AI in education","educational AI","AI-assisted learning","algorithmically supported instruction"],
+        ["tư duy độc lập","independent thinking","critical thinking","intellectual autonomy","independent analytical judgement"],
+        ["phụ thuộc vào công nghệ","depend on technology","rely heavily on technology","become overdependent on digital tools","develop excessive reliance on automated systems"]
+      ],
+      "Data Description":[
+        ["tăng mạnh","increase a lot","rise sharply","show a marked increase","experience a substantial upward trend"],
+        ["giảm dần","go down slowly","decline gradually","decrease steadily","undergo a sustained decline"],
+        ["cao nhất","the highest","the largest figure","the most significant proportion","the dominant category throughout the period"]
+      ]
+    };
+
+    let currentQuestion = questions[0];
+    let currentLevel = "Intermediate";
+    let currentFeedback = null;
+    let activeSentence = 0;
+    let points = 0;
+
+    function selectLevel(level){
+      currentLevel = level;
+      document.getElementById("selectedLevelLabel").innerText = "Selected: " + level;
+      document.querySelectorAll(".level-card").forEach(el=>{
+        el.classList.toggle("active", el.dataset.level === level);
+      });
+    }
+
+    function renderQuestions(){
+      const list = document.getElementById("questionList");
+      list.innerHTML = "";
+      questions.forEach(q=>{
+        const el = document.createElement("div");
+        el.className = "question" + (q.id === currentQuestion.id ? " active" : "");
+        el.innerHTML = `
+          <div>
+            <span class="pill">${q.task}</span>
+            <span class="pill">${q.type}</span>
+            <span class="pill">${q.level}</span>
+          </div>
+          <p>${q.prompt}</p>
+        `;
+        el.onclick = ()=>{currentQuestion=q;renderAll();};
+        list.appendChild(el);
+      });
+    }
+
+    function renderTask(){
+      document.getElementById("taskType").innerText = currentQuestion.task;
+      document.getElementById("taskLevel").innerText = currentQuestion.level;
+      document.getElementById("taskTitle").innerText = currentQuestion.type;
+      document.getElementById("taskPrompt").innerText = currentQuestion.prompt;
+      document.getElementById("taskTime").innerText = currentQuestion.time;
+      document.getElementById("taskWords").innerText = currentQuestion.words;
+      document.getElementById("requirements").innerHTML = currentQuestion.requirements.map(x=>`<p>• ${x}</p>`).join("");
+      document.getElementById("plan").innerHTML = currentQuestion.plan.map(x=>`<p>• ${x}</p>`).join("");
+    }
+
+    function renderVocab(){
+      const vocab = vocabByTopic[currentQuestion.topic] || [];
+      document.getElementById("vocabList").innerHTML = vocab.map(row=>`
+        <div class="vocab">
+          <b>${row[0]}</b>
+          <div class="vocab-grid">
+            <div><b>Band 5:</b> ${row[1]}</div>
+            <div><b>Band 6:</b> ${row[2]}</div>
+            <div><b>Band 7:</b> ${row[3]}</div>
+            <div><b>Band 8+:</b> ${row[4]}</div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function startTask(){
+      document.getElementById("essay").value = "";
+      currentFeedback = null;
+      activeSentence = 0;
+      document.getElementById("overallScore").innerText = "--";
+      document.getElementById("bandGap").innerText = "--";
+      document.getElementById("scoreBar").style.width = "0%";
+      document.getElementById("criteria").innerHTML = "";
+      document.getElementById("sentenceList").innerHTML = "";
+      document.getElementById("sentenceGuide").innerHTML = "<h3>Sentence Guide</h3><p>Feedback theo từng câu sẽ hiện ở đây sau khi bấm Evaluate.</p>";
+      document.getElementById("reportBox").value = "";
+      updateWordCount();
+    }
+
+    function loadSample(){
+      document.getElementById("essay").value = "Many people thinks online learning is more better than traditional class. Government should spend money for education. This can help students learn good.";
+      updateWordCount();
+    }
+
+    function updateWordCount(){
+      const text = document.getElementById("essay").value.trim();
+      document.getElementById("wordCount").innerText = text ? text.split(/\s+/).length : 0;
+    }
+
+    function splitSentences(text){
+      const clean = text.replace(/\s+/g," ").trim();
+      if(!clean) return [];
+      return clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [];
+    }
+
+    function reviewSentence(sentence,index){
+      const lower = sentence.toLowerCase();
+      if(lower.includes("thinks") || lower.includes("more better")){
+        return {
+          no:index+1,status:"Needs correction",type:"Grammar",original:sentence,
+          problem:"Subject–verb agreement and double comparative error.",
+          corrected:"Many people think online learning is better than traditional classes.",
+          why:"People is plural, so use think. More better is incorrect because better is already comparative.",
+          upgrade:"Many learners regard online education as a more flexible alternative to classroom-based instruction.",
+          focus:"a more flexible alternative to"
+        };
+      }
+      if(lower.includes("spend money for")){
+        return {
+          no:index+1,status:"Needs correction",type:"Collocation",original:sentence,
+          problem:"Spend money for is unnatural in this context.",
+          corrected:"Governments should spend money on education.",
+          why:"The natural collocation is spend money on. A more academic phrase is allocate public funding to.",
+          upgrade:"Governments should allocate more public funding to education and digital learning infrastructure.",
+          focus:"allocate public funding to"
+        };
+      }
+      if(lower.includes("learn good")){
+        return {
+          no:index+1,status:"Needs correction",type:"Word form",original:sentence,
+          problem:"Good is an adjective, but this position needs an adverb.",
+          corrected:"This can help students learn effectively.",
+          why:"Use effectively after the verb learn. For IELTS, express the learning result more precisely.",
+          upgrade:"Well-designed online platforms can enhance students' academic performance when combined with teacher guidance.",
+          focus:"enhance academic performance"
+        };
+      }
+      return {
+        no:index+1,status:"Acceptable",type:"Minor improvement",original:sentence,
+        problem:"No major error detected in this demo checker.",
+        corrected:sentence,
+        why:"The sentence is understandable. In the full AI version, it should be checked for grammar, vocabulary, cohesion, and task response.",
+        upgrade:sentence,
+        focus:"academic precision"
+      };
+    }
+
+    function evaluateEssay(){
+      const text = document.getElementById("essay").value;
+      const targetBand = Number(document.getElementById("targetBand").value);
+      const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const hasPosition = /agree|disagree|believe|opinion|argue|extent/i.test(text);
+      const hasLinker = /however|therefore|moreover|although|for example|as a result/i.test(text);
+      const hasComplex = /because|although|while|whereas|which|that/i.test(text);
+      let band = 5;
+      if(wordCount > 120) band += .5;
+      if(wordCount > 220) band += .5;
+      if(hasPosition) band += .5;
+      if(hasLinker) band += .5;
+      if(hasComplex) band += .5;
+      if(currentLevel === "Advanced") band += .2;
+      if(currentLevel === "Beginner") band -= .2;
+      band = Math.min(targetBand, Math.min(8, Math.max(4, band)));
+
+      const reviews = splitSentences(text).map(reviewSentence);
+      currentFeedback = {
+        overall:band.toFixed(1),
+        gap:Math.max(0,targetBand-band).toFixed(1),
+        reviews,
+        criteria:[
+          ["Task Response", hasPosition ? band : band-.5, "Make the position clearer and develop ideas more fully."],
+          ["Coherence & Cohesion", hasLinker ? band : band-.5, "Use clearer logical links between sentences and paragraphs."],
+          ["Lexical Resource", band-.2, "Use more precise topic-specific vocabulary and natural collocations."],
+          ["Grammar Range & Accuracy", hasComplex ? band : band-.5, "Use controlled complex sentences with fewer local errors."]
+        ],
+        modelAnswer:"Although online learning can expand educational access and flexibility, it is unlikely to fully replace classroom-based education because face-to-face instruction still plays an important role in motivation, interaction, and academic discipline."
+      };
+      points += 120 + Math.round(band*10);
+      document.getElementById("points").innerText = points;
+      document.getElementById("rankPoints").innerText = points + " points";
+      activeSentence = 0;
+      renderFeedback();
+    }
+
+    function renderFeedback(){
+      if(!currentFeedback) return;
+      document.getElementById("overallScore").innerText = currentFeedback.overall;
+      document.getElementById("bandGap").innerText = currentFeedback.gap;
+      document.getElementById("scoreBar").style.width = (Number(currentFeedback.overall)/9*100) + "%";
+      document.getElementById("criteria").innerHTML = currentFeedback.criteria.map(c=>`
+        <div class="criterion">
+          <h3>${c[0]} <span class="pill pill-primary">${Number(c[1]).toFixed(1)}</span></h3>
+          <p class="muted">${c[2]}</p>
+        </div>
+      `).join("");
+      document.getElementById("sentenceList").innerHTML = currentFeedback.reviews.map((r,i)=>`
+        <div class="sentence ${i===activeSentence ? "active":""}" onclick="selectSentence(${i})">
+          <b>Sentence ${r.no}</b>
+          <p class="muted">${r.original}</p>
+          <span class="pill ${r.status==="Acceptable" ? "pill-good":"pill-bad"}">${r.type}</span>
+          <span class="pill">${r.status}</span>
+        </div>
+      `).join("");
+      renderSentenceGuide();
+    }
+
+    function selectSentence(i){
+      activeSentence=i;
+      renderFeedback();
+    }
+
+    function renderSentenceGuide(){
+      const r = currentFeedback?.reviews?.[activeSentence];
+      if(!r){
+        document.getElementById("sentenceGuide").innerHTML = "<h3>Sentence Guide</h3><p>No sentence selected.</p>";
+        return;
+      }
+      document.getElementById("sentenceGuide").innerHTML = `
+        <h3>Sentence Guide</h3>
+        <div class="guide-box"><small>Problem</small><p>${r.problem}</p></div>
+        <div class="guide-box green"><small>Corrected</small><p>${r.corrected}</p></div>
+        <div class="guide-box"><small>Why</small><p>${r.why}</p></div>
+        <div class="guide-box white"><small>Band upgrade</small><p><b>${r.upgrade}</b></p><p><b>Focus phrase:</b> ${r.focus}</p></div>
+      `;
+    }
+
+    function showReport(){
+      if(!currentFeedback){
+        document.getElementById("reportBox").value = "Please evaluate an essay first.";
+        return;
+      }
+      const criteria = currentFeedback.criteria.map(c=>`- ${c[0]}: ${Number(c[1]).toFixed(1)} | ${c[2]}`).join("\n");
+      const sentences = currentFeedback.reviews.map(r=>`${r.no}. ${r.original}\n   Issue: ${r.type}\n   Corrected: ${r.corrected}\n   Upgrade: ${r.upgrade}`).join("\n\n");
+      document.getElementById("reportBox").value =
+`IELTS Writing AI Feedback Report
+
+Level: ${currentLevel}
+Question:
+${currentQuestion.prompt}
+
+Estimated Band: ${currentFeedback.overall}
+Band Gap: ${currentFeedback.gap}
+
+Criteria:
+${criteria}
+
+Sentence Review:
+${sentences}
+
+Model Upgrade:
+${currentFeedback.modelAnswer}`;
+    }
+
+    function renderAll(){
+      renderQuestions();
+      renderTask();
+      renderVocab();
+    }
+    renderAll();
+    updateWordCount();
+  </script>
+</body>
+</html>
